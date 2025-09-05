@@ -1,0 +1,56 @@
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://tony19.github.io/logback-android/xml"
+    xsi:schemaLocation="https://tony19.github.io/logback-android/xml https://cdn.jsdelivr.net/gh/tony19/logback-android/logback.xsd">
+
+<!--    <property name="LOG_DIR" value="/sdcard/Android/data/com.fansirsqi.sen/files" />-->
+    <property name="LOG_DIR" value="/data/data/com.fansirsqi.sen/files" />
+    <!-- Logcat appender -->
+    <appender name="logcat" class="ch.qos.logback.classic.android.LogcatAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- TRACE log file -->
+    <appender name="TraceLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/trace.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/trace.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- DEBUG log file -->
+    <appender name="DebugLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/debug.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+            <maxFileSize>50MB</maxFileSize>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger -->
+    <root level="TRACE">
+        <appender-ref ref="logcat"/>
+        <appender-ref ref="TraceLog"/>
+        <appender-ref ref="DebugLog"/>
+    </root>
+
+</configuration>
