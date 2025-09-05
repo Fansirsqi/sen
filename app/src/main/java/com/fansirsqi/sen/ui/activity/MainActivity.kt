@@ -12,14 +12,19 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.core.view.updateMargins
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import com.fansirsqi.sen.BuildConfig
 import com.fansirsqi.sen.R
+import com.fansirsqi.sen.util.HitokotoApiClient
+import com.fansirsqi.sen.util.Log
+import com.fansirsqi.sen.util.Toast
 import com.highcapable.betterandroid.system.extension.component.disableComponent
 import com.highcapable.betterandroid.system.extension.component.enableComponent
 import com.highcapable.betterandroid.system.extension.component.isComponentEnabled
@@ -30,6 +35,7 @@ import com.highcapable.betterandroid.ui.extension.view.updateMargins
 import com.highcapable.betterandroid.ui.extension.view.updatePadding
 import com.highcapable.betterandroid.ui.extension.view.updateTypeface
 import com.highcapable.hikage.core.base.Hikageable
+import com.highcapable.hikage.core.runtime.mutableStateOf
 import com.highcapable.hikage.extension.setContentView
 import com.highcapable.hikage.widget.android.widget.ImageView
 import com.highcapable.hikage.widget.android.widget.LinearLayout
@@ -38,15 +44,19 @@ import com.highcapable.hikage.widget.android.widget.TextView
 import com.highcapable.hikage.widget.androidx.core.widget.NestedScrollView
 import com.highcapable.hikage.widget.com.fansirsqi.sen.ui.view.MaterialSwitch
 import com.highcapable.yukihookapi.YukiHookAPI
+import kotlinx.coroutines.launch
 import android.R as Android_R
 
 class MainActivity : AppViewsActivity() {
-
-    private val homeComponent by lazy { ComponentName(packageName, "${BuildConfig.APPLICATION_ID}.Home") } 
+    // 使用 remember 和 mutableStateOf 来管理 hitokotoText 的状态
+    private var hitokotoText by mutableStateOf(HitokotoApiClient.defaultHitokotoResponse().fullHitokoto)
+    private val homeComponent by lazy { ComponentName(packageName, "${BuildConfig.APPLICATION_ID}.Home") }
+    private val oneTextId = 9527
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // 注册组件
         // Base activity background
         findViewById<View>(Android_R.id.content).setBackgroundResource(R.color.colorThemeBackground)
 
@@ -69,6 +79,7 @@ class MainActivity : AppViewsActivity() {
                         updatePadding(top = 13.dp, bottom = 5.dp)
                     }
                 ) {
+                    // App name
                     TextView(
                         lparams = LayoutParams {
                             weight = 1f
@@ -80,6 +91,26 @@ class MainActivity : AppViewsActivity() {
                         textSize = 25f
                         updateTypeface(Typeface.BOLD)
                     }
+                    TextView(
+                        lparams = LayoutParams {
+                            weight = 2f
+                        }
+                    ) {
+                        alpha = 0.7f
+                        isSingleLine = false
+                        ellipsize = TextUtils.TruncateAt.END
+                        textColor = colorResource(R.color.colorPrimaryAccent)
+                        textSize = 13f
+                        maxLines = 3
+                        setId(oneTextId)
+                        text = hitokotoText
+                        gravity = Gravity.CENTER
+                        setOnClickListener {
+                            fetchHitokoto()
+                        }
+                    }
+
+                    // GitHub icon
                     ImageView(
                         lparams = LayoutParams(27.dp, 27.dp) {
                             marginEnd = 5.dp
@@ -92,7 +123,12 @@ class MainActivity : AppViewsActivity() {
                         setOnClickListener {
                             // Do something, e.g., open GitHub page
                             // 做点什么，比如打开 GitHub 页面
-
+                            Toast.show("Test!")
+                            Log.v("MainActivity", "Test!")
+                            Log.d("MainActivity", "Test!")
+                            Log.i("MainActivity", "Test!")
+                            Log.w("MainActivity", "Test!")
+                            Log.e("MainActivity", "Test!")
                         }
                     }
                 }
@@ -103,10 +139,12 @@ class MainActivity : AppViewsActivity() {
                     },
                     init = {
                         gravity = Gravity.CENTER or Gravity.START
-                        setBackgroundResource(when {
-                            YukiHookAPI.Status.isXposedModuleActive -> R.drawable.bg_green_round
-                            else -> R.drawable.bg_dark_round
-                        })
+                        setBackgroundResource(
+                            when {
+                                YukiHookAPI.Status.isXposedModuleActive -> R.drawable.bg_blue_round
+                                else -> R.drawable.bg_dark_round
+                            }
+                        )
                     }
                 ) {
                     ImageView(
@@ -115,11 +153,21 @@ class MainActivity : AppViewsActivity() {
                             marginEnd = 5.dp
                         }
                     ) {
-                        setImageResource(when {
-                            YukiHookAPI.Status.isXposedModuleActive -> R.mipmap.ic_success
-                            else -> R.mipmap.ic_warn
-                        })
-                        imageTintList = stateColorResource(R.color.white)
+                        setImageResource(
+                            when {
+                                YukiHookAPI.Status.isXposedModuleActive -> R.mipmap.ic_success
+                                else -> R.mipmap.ic_warn
+                            }
+                        )
+                        imageTintList = when {
+                            YukiHookAPI.Status.isXposedModuleActive -> {
+                                stateColorResource(R.color.white)
+                            }
+
+                            else -> {
+                                stateColorResource(R.color.colorRedWarning)
+                            }
+                        }
                     }
                     LinearLayout(
                         lparams = LayoutParams(widthMatchParent = true),
@@ -129,18 +177,20 @@ class MainActivity : AppViewsActivity() {
                         }
                     ) {
                         TextView(
-                            lparams = LayoutParams { 
+                            lparams = LayoutParams {
                                 bottomMargin = 5.dp
                             }
-                        ) { 
+                        ) {
                             isSingleLine = true
                             ellipsize = TextUtils.TruncateAt.END
                             textColor = colorResource(R.color.white)
                             textSize = 18f
-                            text = stringResource(when {
-                                YukiHookAPI.Status.isXposedModuleActive -> R.string.module_is_activated
-                                else -> R.string.module_not_activated
-                            })
+                            text = stringResource(
+                                when {
+                                    YukiHookAPI.Status.isXposedModuleActive -> R.string.module_is_activated
+                                    else -> R.string.module_not_activated
+                                }
+                            )
                         }
                         LinearLayout(
                             lparams = LayoutParams {
@@ -149,7 +199,7 @@ class MainActivity : AppViewsActivity() {
                             init = {
                                 gravity = Gravity.CENTER or Gravity.START
                             }
-                        ) { 
+                        ) {
                             TextView {
                                 alpha = 0.8f
                                 isSingleLine = true
@@ -159,7 +209,7 @@ class MainActivity : AppViewsActivity() {
                                 text = stringResource(R.string.module_version, BuildConfig.VERSION_NAME)
                             }
                             TextView(
-                                lparams = LayoutParams { 
+                                lparams = LayoutParams {
                                     leftMargin = 5.dp
                                 }
                             ) {
@@ -172,16 +222,9 @@ class MainActivity : AppViewsActivity() {
                                 isVisible = false
                             }
                         }
-                        TextView {
-                            alpha = 0.8f
-                            isSingleLine = true
-                            ellipsize = TextUtils.TruncateAt.END
-                            textColor = colorResource(R.color.white)
-                            textSize = 13f
-                            text = "- Your custom text here -"
-                        }
+                        // txtx
                         TextView(
-                            lparams = LayoutParams { 
+                            lparams = LayoutParams {
                                 topMargin = 5.dp
                             }
                         ) {
@@ -285,11 +328,33 @@ class MainActivity : AppViewsActivity() {
                         Layout(createPromotionItem(R.string.about_module, R.mipmap.ic_yukihookapi))
                         Space(lparams = LayoutParams(height = 10.dp))
                         Layout(createPromotionItem(R.string.about_module_extension, R.mipmap.ic_kavaref))
+
+
                     }
                 }
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        fetchHitokoto()
+    }
+
+    /**
+     * Fetch hitokoto from network and update UI
+     */
+    private fun fetchHitokoto() {
+        // 使用协程获取新的 hitokotoText
+        lifecycleScope.launch {
+            Log.d("Hitokoto", "start fetching hitokoto")
+            val response = HitokotoApiClient.getHitokoto()
+            Log.d("Hitokoto", response.toString())
+//            hitokotoText = "${response.hitokoto.replace("。", "。\n")}                           -----Re:${response.fromWho ?: ""}  ${response.from ?: ""}"
+            findViewById<TextView>(oneTextId)?.text = response.hitokoto
+        }
+    }
+
 
     private fun createPromotionItem(
         @StringRes stringResource: Int,
