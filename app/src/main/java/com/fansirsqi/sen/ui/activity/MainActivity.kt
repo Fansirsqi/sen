@@ -49,7 +49,7 @@ import android.R as Android_R
 
 class MainActivity : AppViewsActivity() {
     // 使用 remember 和 mutableStateOf 来管理 hitokotoText 的状态
-    private var hitokotoText by mutableStateOf(HitokotoApiClient.defaultHitokotoResponse().fullHitokoto)
+    private var hitokotoText by mutableStateOf(HitokotoApiClient.defaultHitokotoResponse().hitokoto)
     private val homeComponent by lazy { ComponentName(packageName, "${BuildConfig.APPLICATION_ID}.Home") }
     private val oneTextId = 9527
 
@@ -91,24 +91,7 @@ class MainActivity : AppViewsActivity() {
                         textSize = 25f
                         updateTypeface(Typeface.BOLD)
                     }
-                    TextView(
-                        lparams = LayoutParams {
-                            weight = 2f
-                        }
-                    ) {
-                        alpha = 0.7f
-                        isSingleLine = false
-                        ellipsize = TextUtils.TruncateAt.END
-                        textColor = colorResource(R.color.colorPrimaryAccent)
-                        textSize = 13f
-                        maxLines = 3
-                        setId(oneTextId)
-                        text = hitokotoText
-                        gravity = Gravity.CENTER
-                        setOnClickListener {
-                            fetchHitokoto()
-                        }
-                    }
+
 
                     // GitHub icon
                     ImageView(
@@ -223,6 +206,26 @@ class MainActivity : AppViewsActivity() {
                             }
                         }
                         // txtx
+
+                        TextView(
+                            lparams = LayoutParams {
+                                weight = 2f
+                            }
+                        ) {
+                            alpha = 0.7f
+                            isSingleLine = false
+                            ellipsize = TextUtils.TruncateAt.END
+//                            textColor = colorResource(R.color.colorPrimaryAccent)
+                            textColor = colorResource(R.color.white)
+                            textSize = 13f
+                            maxLines = 3
+                            setId(oneTextId)
+                            text = "  $hitokotoText"
+                            gravity = Gravity.START
+                            setOnClickListener {
+                                fetchHitokoto()
+                            }
+                        }
                         TextView(
                             lparams = LayoutParams {
                                 topMargin = 5.dp
@@ -334,12 +337,9 @@ class MainActivity : AppViewsActivity() {
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
         fetchHitokoto()
     }
+
 
     /**
      * Fetch hitokoto from network and update UI
@@ -350,7 +350,6 @@ class MainActivity : AppViewsActivity() {
             Log.d("Hitokoto", "start fetching hitokoto")
             val response = HitokotoApiClient.getHitokoto()
             Log.d("Hitokoto", response.toString())
-//            hitokotoText = "${response.hitokoto.replace("。", "。\n")}                           -----Re:${response.fromWho ?: ""}  ${response.from ?: ""}"
             findViewById<TextView>(oneTextId)?.text = response.hitokoto
         }
     }
