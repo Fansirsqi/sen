@@ -31,6 +31,9 @@ plugins:
   com.google.devtools.ksp:
     alias: kotlin-ksp
     version: 2.2.10-2.0.2
+  org.jetbrains.kotlin.plugin.serialization:
+    alias: kotlin-serialization
+    version: 1.9.23
 
 libraries:
   de.robv.android.xposed:
@@ -95,6 +98,9 @@ libraries:
   com.google.code.gson:
     gson:
       version: 2.8.9
+  org.jetbrains.kotlinx:
+    kotlinx-serialization-json:
+      version: 1.6.3
   org.luckypray:
     dexkit:
       version: 2.0.6
@@ -104,25 +110,3 @@ libraries:
   com.github.tony19:
     logback-android:
       version: 3.0.0
-#  androidx.compose.ui:
-#    ui:
-#      version: 1.9.0
-#  androidx.compose.animation:
-#    animation:
-#      version: 1.9.0
-#  androidx.compose.material:
-#    material:
-#      version: 1.9.0
-#  androidx.compose.foundation:
-#    foundation:
-#      version: 1.9.0
-#  androidx.compose.material3:
-#    material3:
-#      version: 1.3.2
-#  androidx.compose.runtime:
-#    runtime:
-#      version: 1.9.0
-#    runtime-livedata:
-#      version: 1.9.0
-#    runtime-rxjava2:
-#      version: 1.9.0
