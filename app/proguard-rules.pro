@@ -44,12 +44,22 @@
     native <methods>;
 }
 
+
 # for logback
 # Issue #229
--keepclassmembers class ch.qos.logback.classic.pattern.* { <init>(); }
-
-# The following rules should only be used if you plan to keep
-# the logging calls in your released app.
--keepclassmembers ch.qos.logback.** { *; }
--keepclassmembers org.slf4j.impl.** { *; }
+-keep class ch.qos.logback.classic.pattern.* { <init>(); }
+# 如果确实使用 logback/SLF4J，可保留成员
+-keep class ch.qos.logback.** { *; }
+-keep class org.slf4j.impl.** { *; }
+# 保留注解
 -keepattributes *Annotation*
+
+# 忽略 javax.mail 相关缺失
+-dontwarn javax.mail.**
+-dontwarn javax.activation.**
+
+# 忽略 DexKit/YukiHookAPI 引用的 Java 8 反射类
+-dontwarn java.lang.reflect.AnnotatedType
+-dontwarn java.lang.reflect.Executable
+-dontwarn java.lang.reflect.Parameter
+-dontwarn java.lang.reflect.Type
